@@ -39,7 +39,20 @@ public class CartController {
 
     @DeleteMapping("/carts/{id}")
     public Result<Void> deleteById(@PathVariable Long id) {
+        Long currentUserId = UserContext.getUserId();
+        Cart cart = cartService.findById(id);
+
+        if (cart == null) {
+            return Result.error("购物车记录不存在");
+        }
+
+        if (!currentUserId.equals(cart.getUserId())) {
+            return Result.error("无权操作他人的购物车");
+        }
+
         int result = cartService.deleteById(id);
         return result > 0 ? Result.success() : Result.error("删除购物车商品失败");
     }
+
+
 }

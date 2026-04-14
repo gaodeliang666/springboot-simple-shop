@@ -39,10 +39,17 @@ public class OrderController {
 
     @GetMapping("/orders/{id}")
     public Result<Order> findDetailById(@PathVariable Long id) {
+        Long currentUserId = UserContext.getUserId();
         Order order = orderService.findDetailById(id);
+
         if (order == null) {
             return Result.error("订单不存在");
         }
+
+        if (!currentUserId.equals(order.getUserId())) {
+            return Result.error("无权查看他人的订单");
+        }
+
         return Result.success(order);
     }
 
@@ -57,6 +64,17 @@ public class OrderController {
 
     @PutMapping("/orders/cancel/{id}")
     public Result<Void> cancelById(@PathVariable Long id) {
+        Long currentUserId = UserContext.getUserId();
+        Order order = orderService.findDetailById(id);
+
+        if (order == null) {
+            return Result.error("订单不存在");
+        }
+
+        if (!currentUserId.equals(order.getUserId())) {
+            return Result.error("无权取消他人的订单");
+        }
+
         orderService.cancelById(id);
         return Result.success();
     }

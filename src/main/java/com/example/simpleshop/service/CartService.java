@@ -12,4 +12,6 @@ public interface CartService {
     int updateQuantity(Cart cart);
 
     int deleteById(Long id);
+
+    Cart findById(Long id);
 }
