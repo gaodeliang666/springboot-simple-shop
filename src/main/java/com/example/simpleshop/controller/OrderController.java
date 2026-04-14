@@ -2,6 +2,7 @@ package com.example.simpleshop.controller;
 
 import com.example.simpleshop.common.Result;
 import com.example.simpleshop.constant.OrderStatusConstant;
+import com.example.simpleshop.context.UserContext;
 import com.example.simpleshop.entity.Order;
 import com.example.simpleshop.service.OrderService;
 import org.springframework.web.bind.annotation.*;
@@ -18,18 +19,21 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @PostMapping("/orders/{userId}")
-    public Result<Long> submitOrder(@PathVariable Long userId) {
+    @PostMapping("/orders")
+    public Result<Long> submitOrder() {
+        Long userId = UserContext.getUserId();
         return Result.success(orderService.submitOrder(userId));
     }
 
-    @PostMapping("/orders/redis/{userId}")
-    public Result<Long> submitRedisOrder(@PathVariable Long userId) {
+    @PostMapping("/orders/redis")
+    public Result<Long> submitRedisOrder() {
+        Long userId = UserContext.getUserId();
         return Result.success(orderService.submitRedisOrder(userId));
     }
 
-    @GetMapping("/orders/user/{userId}")
-    public Result<List<Order>> findByUserId(@PathVariable Long userId) {
+    @GetMapping("/orders/my")
+    public Result<List<Order>> findByUserId() {
+        Long userId = UserContext.getUserId();
         return Result.success(orderService.findByUserId(userId));
     }
 
@@ -57,16 +61,16 @@ public class OrderController {
         return Result.success();
     }
 
-    @GetMapping("/orders/user/{userId}/status/{status}")
-    public Result<List<Order>> findByUserIdAndStatus(@PathVariable Long userId,
-                                                     @PathVariable String status) {
+    @GetMapping("/orders/my/status/{status}")
+    public Result<List<Order>> findByUserIdAndStatus(@PathVariable String status) {
+        Long userId = UserContext.getUserId();
+
         if (!OrderStatusConstant.UNPAID.equals(status)
                 && !OrderStatusConstant.PAID.equals(status)
                 && !OrderStatusConstant.CANCELLED.equals(status)) {
             return Result.error("订单状态不合法");
         }
+
         return Result.success(orderService.findByUserIdAndStatus(userId, status));
     }
-
-
 }
