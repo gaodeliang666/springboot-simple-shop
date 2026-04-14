@@ -1,0 +1,43 @@
+package com.example.simpleshop.service.impl;
+
+import com.example.simpleshop.entity.User;
+import com.example.simpleshop.mapper.UserMapper;
+import com.example.simpleshop.service.UserService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class UserServiceImpl implements UserService {
+
+    private final UserMapper userMapper;
+
+    public UserServiceImpl(UserMapper userMapper) {
+        this.userMapper = userMapper;
+    }
+
+    @Override
+    public List<User> findAll() {
+        return userMapper.findAll();
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userMapper.findById(id);
+    }
+
+    @Override
+    public int insert(User user) {
+        return userMapper.insert(user);
+    }
+
+    @Override
+    public int update(User user) {
+        return userMapper.update(user);
+    }
+
+    @Override
+    public int deleteById(Long id) {
+        return userMapper.deleteById(id);
+    }
+}
