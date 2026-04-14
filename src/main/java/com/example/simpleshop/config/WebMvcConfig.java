@@ -20,10 +20,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/auth/login",
+                        "/auth/register",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "/error",
-                        "/users"
+                        "/error"
                 );
     }
 }

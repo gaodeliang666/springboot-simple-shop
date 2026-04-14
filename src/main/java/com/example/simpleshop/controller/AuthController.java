@@ -2,6 +2,7 @@ package com.example.simpleshop.controller;
 
 import com.example.simpleshop.common.Result;
 import com.example.simpleshop.dto.LoginRequest;
+import com.example.simpleshop.entity.User;
 import com.example.simpleshop.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,12 @@ public class AuthController {
 
     public AuthController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping("/register")
+    public Result<Void> register(@RequestBody User user) {
+        int result = userService.insert(user);
+        return result > 0 ? Result.success() : Result.error("注册失败");
     }
 
     @PostMapping("/login")
