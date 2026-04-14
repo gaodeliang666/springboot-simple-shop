@@ -38,3 +38,10 @@
 - 修复 Swagger UI 无法渲染接口文档的问题
 - 修复 `/v3/api-docs` 返回 500 的问题
 - 修复 springdoc 与 Spring Boot 版本不兼容导致的文档生成异常
+
+## v0.5.0
+
+### Added
+- 新增用户登录接口
+- 支持用户名密码登录
+- 登录成功后生成 JWT token
