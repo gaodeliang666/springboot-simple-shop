@@ -26,4 +26,7 @@ public interface UserMapper {
 
     @Delete("delete from user where id = #{id}")
     int deleteById(Long id);
+
+    @Select("select id, username, password, nickname, phone, create_time as createTime, update_time as updateTime from user where username = #{username}")
+    User findByUsername(String username);
 }

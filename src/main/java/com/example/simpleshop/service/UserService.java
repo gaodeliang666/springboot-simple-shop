@@ -14,4 +14,6 @@ public interface UserService {
     int update(User user);
 
     int deleteById(Long id);
+
+    String login(String username, String password);
 }

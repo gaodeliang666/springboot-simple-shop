@@ -3,6 +3,7 @@ package com.example.simpleshop.service.impl;
 import com.example.simpleshop.entity.User;
 import com.example.simpleshop.mapper.UserMapper;
 import com.example.simpleshop.service.UserService;
+import com.example.simpleshop.util.JwtUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -39,5 +40,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public int deleteById(Long id) {
         return userMapper.deleteById(id);
+    }
+
+    @Override
+    public String login(String username, String password) {
+        User user = userMapper.findByUsername(username);
+        if (user == null) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
+        if (!user.getPassword().equals(password)) {
+            throw new RuntimeException("用户名或密码错误");
+        }
+
+        return JwtUtil.generateToken(user.getId(), user.getUsername());
     }
 }
