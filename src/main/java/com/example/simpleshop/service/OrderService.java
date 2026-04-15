@@ -11,11 +11,11 @@ public interface OrderService {
 
     Order findDetailById(Long id);
 
-    int updateStatus(Long id, String status);
-
     int cancelById(Long id);
 
     List<Order> findByUserIdAndStatus(Long userId, String status);
 
     Long submitRedisOrder(Long userId);
+
+    void payOrder(Long id);
 }

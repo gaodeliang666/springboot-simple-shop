@@ -2,8 +2,10 @@ package com.example.simpleshop.controller;
 
 import com.example.simpleshop.common.Result;
 import com.example.simpleshop.dto.LoginRequest;
+import com.example.simpleshop.dto.RegisterRequest;
 import com.example.simpleshop.entity.User;
 import com.example.simpleshop.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,7 +22,13 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Result<Void> register(@RequestBody User user) {
+    public Result<Void> register(@RequestBody @Valid RegisterRequest request) {
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(request.getPassword());
+        user.setNickname(request.getNickname());
+        user.setPhone(request.getPhone());
+
         int result = userService.insert(user);
         return result > 0 ? Result.success() : Result.error("注册失败");
     }

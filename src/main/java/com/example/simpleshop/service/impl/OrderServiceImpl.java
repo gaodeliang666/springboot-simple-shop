@@ -1,5 +1,6 @@
 package com.example.simpleshop.service.impl;
 
+import com.example.simpleshop.constant.OrderStatusConstant;
 import com.example.simpleshop.entity.Cart;
 import com.example.simpleshop.entity.Order;
 import com.example.simpleshop.entity.OrderItem;
@@ -9,6 +10,8 @@ import com.example.simpleshop.mapper.OrderItemMapper;
 import com.example.simpleshop.mapper.OrderMapper;
 import com.example.simpleshop.mapper.ProductMapper;
 import com.example.simpleshop.service.OrderService;
+import jakarta.annotation.Resource;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.simpleshop.service.RedisCartService;
@@ -18,6 +21,7 @@ import com.example.simpleshop.config.RabbitMQConfig;
 import lombok.extern.slf4j.Slf4j;
 import com.example.simpleshop.constant.MqMessageTypeConstant;
 import com.example.simpleshop.mq.message.OrderDelayMessage;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -75,7 +79,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setUserId(userId);
         order.setTotalAmount(totalAmount);
-        order.setStatus("UNPAID");
+        order.setStatus(OrderStatusConstant.UNPAID);
         orderMapper.insert(order);
 
         for (Cart cart : cartList) {
@@ -91,8 +95,10 @@ public class OrderServiceImpl implements OrderService {
 
             int result = productMapper.decreaseStock(product.getId(), cart.getQuantity());
             if (result <= 0) {
-                throw new BusinessException("扣减库存失败，商品：" + product.getName());
+                throw new BusinessException("商品库存不足，商品：" + product.getName());
             }
+            deleteProductCache(product.getId());
+            deleteProductListCache();
         }
 
         cartMapper.deleteByUserId(userId);
@@ -117,20 +123,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public int updateStatus(Long id, String status) {
-        return orderMapper.updateStatus(id, status);
-    }
-
-    @Override
     @Transactional
     public int cancelById(Long id) {
-        Order order = orderMapper.findById(id);
-        if (order == null) {
-            throw new BusinessException("订单不存在");
-        }
+        int updated = orderMapper.updateStatusCondition(
+                id,
+                OrderStatusConstant.UNPAID,
+                OrderStatusConstant.CANCELLED
+        );
 
-        if (!"UNPAID".equals(order.getStatus())) {
-            throw new BusinessException("只有待支付订单才能取消");
+        if (updated <= 0) {
+            throw new BusinessException("订单不存在或只有待支付订单才能取消");
         }
 
         List<OrderItem> orderItems = orderItemMapper.findByOrderId(id);
@@ -139,9 +141,12 @@ public class OrderServiceImpl implements OrderService {
             if (result <= 0) {
                 throw new BusinessException("恢复库存失败，商品id：" + orderItem.getProductId());
             }
+            deleteProductCache(orderItem.getProductId());
+            deleteProductListCache();
         }
 
-        return orderMapper.updateStatus(id, "CANCELLED");
+
+        return updated;
     }
 
     @Override
@@ -179,7 +184,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setUserId(userId);
         order.setTotalAmount(totalAmount);
-        order.setStatus("UNPAID");
+        order.setStatus(OrderStatusConstant.UNPAID);
         orderMapper.insert(order);
 
         for (Map.Entry<Object, Object> entry : cartMap.entrySet()) {
@@ -198,8 +203,10 @@ public class OrderServiceImpl implements OrderService {
 
             int result = productMapper.decreaseStock(product.getId(), quantity);
             if (result <= 0) {
-                throw new BusinessException("扣减库存失败，商品：" + product.getName());
+                throw new BusinessException("商品库存不足，商品：" + product.getName());
             }
+            deleteProductCache(product.getId());
+            deleteProductListCache();
         }
 
         redisCartService.clearCart(userId);
@@ -221,5 +228,30 @@ public class OrderServiceImpl implements OrderService {
         );
 
         log.info("发送延迟取消订单消息成功，orderId={}", orderId);
+    }
+
+    @Override
+    @Transactional
+    public void payOrder(Long id) {
+        int updated = orderMapper.updateStatusCondition(
+                id,
+                OrderStatusConstant.UNPAID,
+                OrderStatusConstant.PAID
+        );
+
+        if (updated <= 0) {
+            throw new BusinessException("订单不存在或当前状态不可支付");
+        }
+    }
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
+
+    private void deleteProductCache(Long productId) {
+        redisTemplate.delete("product:" + productId);
+    }
+
+    private void deleteProductListCache() {
+        redisTemplate.delete("product:list");
     }
 }

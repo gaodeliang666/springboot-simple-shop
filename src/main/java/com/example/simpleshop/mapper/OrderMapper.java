@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface OrderMapper {
@@ -22,9 +23,12 @@ public interface OrderMapper {
     @Select("select id, user_id as userId, total_amount as totalAmount, status, create_time as createTime, update_time as updateTime from orders where id = #{id}")
     Order findById(Long id);
 
-    @Update("update orders set status = #{status}, update_time = now() where id = #{id}")
-    int updateStatus(Long id, String status);
-
     @Select("select id, user_id as userId, total_amount as totalAmount, status, create_time as createTime, update_time as updateTime from orders where user_id = #{userId} and status = #{status} order by id desc")
     List<Order> findByUserIdAndStatus(Long userId, String status);
+
+    @Update("update orders set status = #{newStatus}, update_time = now() " +
+            "where id = #{id} and status = #{oldStatus}")
+    int updateStatusCondition(@Param("id") Long id,
+                              @Param("oldStatus") String oldStatus,
+                              @Param("newStatus") String newStatus);
 }

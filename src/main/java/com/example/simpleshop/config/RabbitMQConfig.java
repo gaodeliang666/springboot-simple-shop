@@ -49,7 +49,7 @@ public class RabbitMQConfig {
         Map<String, Object> args = new HashMap<>();
         args.put("x-dead-letter-exchange", ORDER_EVENT_EXCHANGE);
         args.put("x-dead-letter-routing-key", ORDER_RELEASE_ROUTING_KEY);
-        args.put("x-message-ttl", 60000);
+        args.put("x-message-ttl", 600000);
         return new Queue(ORDER_DELAY_QUEUE, true, false, false, args);
     }
 

@@ -53,15 +53,6 @@ public class OrderController {
         return Result.success(order);
     }
 
-    @PutMapping("/orders/status")
-    public Result<Void> updateStatus(@RequestBody Map<String, Object> param) {
-        Long id = Long.valueOf(param.get("id").toString());
-        String status = param.get("status").toString();
-
-        int result = orderService.updateStatus(id, status);
-        return result > 0 ? Result.success() : Result.error("修改订单状态失败");
-    }
-
     @PutMapping("/orders/cancel/{id}")
     public Result<Void> cancelById(@PathVariable Long id) {
         Long currentUserId = UserContext.getUserId();
@@ -90,5 +81,21 @@ public class OrderController {
         }
 
         return Result.success(orderService.findByUserIdAndStatus(userId, status));
+    }
+
+    @PutMapping("/pay/{id}")
+    public Result<Void> payOrder(@PathVariable Long id) {
+        Long currentUserId = UserContext.getUserId();
+        Order order = orderService.findDetailById(id);
+
+        if (order == null) {
+            return Result.error("订单不存在");
+        }
+        if (!currentUserId.equals(order.getUserId())) {
+            return Result.error("无权操作他人订单");
+        }
+
+        orderService.payOrder(id);
+        return Result.success();
     }
 }

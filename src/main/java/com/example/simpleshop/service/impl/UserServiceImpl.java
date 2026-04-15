@@ -5,6 +5,7 @@ import com.example.simpleshop.mapper.UserMapper;
 import com.example.simpleshop.service.UserService;
 import com.example.simpleshop.util.JwtUtil;
 import org.springframework.stereotype.Service;
+import com.example.simpleshop.exception.BusinessException;
 
 import java.util.List;
 
@@ -29,6 +30,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int insert(User user) {
+        User existUser = userMapper.findByUsername(user.getUsername());
+        if (existUser != null) {
+            throw new BusinessException("用户名已存在");
+        }
         return userMapper.insert(user);
     }
 
