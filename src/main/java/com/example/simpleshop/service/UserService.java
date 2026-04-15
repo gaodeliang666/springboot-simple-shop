@@ -1,13 +1,14 @@
 package com.example.simpleshop.service;
 
 import com.example.simpleshop.entity.User;
+import com.example.simpleshop.vo.UserVO;
 
 import java.util.List;
 
 public interface UserService {
-    List<User> findAll();
+    List<UserVO> findAll();
 
-    User findById(Long id);
+    UserVO findById(Long id);
 
     int insert(User user);
 

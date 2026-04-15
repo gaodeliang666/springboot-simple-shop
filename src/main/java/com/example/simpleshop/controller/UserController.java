@@ -3,6 +3,7 @@ package com.example.simpleshop.controller;
 import com.example.simpleshop.common.Result;
 import com.example.simpleshop.entity.User;
 import com.example.simpleshop.service.UserService;
+import com.example.simpleshop.vo.UserVO;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -19,13 +20,13 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public Result<List<User>> findAll() {
+    public Result<List<UserVO>> findAll() {
         return Result.success(userService.findAll());
     }
 
     @GetMapping("/users/{id}")
-    public Result<User> findById(@PathVariable Long id) {
-        User user = userService.findById(id);
+    public Result<UserVO> findById(@PathVariable Long id) {
+        UserVO user = userService.findById(id);
         if (user == null) {
             return Result.error("用户不存在");
         }
